@@ -241,6 +241,32 @@ class Score:
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
+        
+
+class EMP:
+    def __init__(self, emys: pg.sprite.Group, bombs: pg.sprite.Group, screen: pg.Surface):
+        self.emys = emys
+        self.bombs = bombs
+        self.screen = screen
+
+    def activate(self):
+        # 画面全体に黄色透明矩形を描画（0.05秒）
+        emp_surf = pg.Surface((WIDTH, HEIGHT))
+        emp_surf.fill((255, 255, 0))
+        emp_surf.set_alpha(100)
+        self.screen.blit(emp_surf, (0, 0))
+        pg.display.update()
+        pg.time.delay(50)
+
+        # 敵機無効化：爆弾落とせない＋ラプラシアンフィルタ
+        for emy in self.emys:
+            emy.interval = math.inf
+            emy.image = pg.transform.laplacian(emy.image)
+
+        # 爆弾無効化：速度半減＆state追加（衝突しても爆発しない）
+        for bomb in self.bombs:
+            bomb.speed = bomb.speed / 2
+            bomb.state = "inactive"
 
 
 class Gravity(pg.sprite.Sprite):
